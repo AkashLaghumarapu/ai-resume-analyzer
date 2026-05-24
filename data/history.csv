@@ -1,0 +1,7 @@
+timestamp,user,resume_name,ats_score,similarity_score,skill_match_score,matched_skills,missing_skills
+2026-05-24T21:59:13,admin,AKASH RESUME 123.pdf,28,0.032,0.667,Communication;Python,Aws
+2026-05-24T21:59:56,admin,Akash_resume 8328() (2).pdf,16,0.048,0.333,Python,Aws;Communication
+2026-05-24T22:10:05,admin,AKASH RESUME 123.pdf,7,0.032,0.333,Python,Api;Aws
+2026-05-24T22:10:34,admin,Akash_resume 8328().pdf,7,0.048,0.333,Python,Api;Aws
+2026-05-24T22:11:01,admin,CHAKRIRESUME.pdf,7,0.027,0.333,Python,Api;Aws
+2026-05-24T22:26:33,admin,Akash_resume 832.pdf,56,0.047,0.333,Python,Api;Aws
