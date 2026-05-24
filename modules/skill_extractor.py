@@ -1,6 +1,3 @@
-import spacy
-
-
 # ---------- SKILLS DATABASE ----------
 
 SKILLS = [
@@ -44,40 +41,19 @@ SKILLS = [
 ]
 
 
-# ---------- LOAD NLP MODEL ----------
-
-def load_nlp_model():
-
-    try:
-
-        return spacy.load(
-            "en_core_web_sm"
-        )
-
-    except OSError:
-
-        spacy.cli.download(
-            "en_core_web_sm"
-        )
-
-        return spacy.load(
-            "en_core_web_sm"
-        )
-
-
 # ---------- EXTRACT SKILLS ----------
 
 def extract_skills(text):
 
-    nlp = load_nlp_model()
+    if text is None:
+
+        return []
 
     text_lower = text.lower()
 
-    doc = nlp(text_lower)
-
     found_skills = set()
 
-    # ---------- PHRASE MATCHING ----------
+    # ---------- DIRECT SKILL MATCH ----------
 
     for skill in SKILLS:
 
@@ -87,19 +63,33 @@ def extract_skills(text):
                 skill.title()
             )
 
-    # ---------- TOKEN MATCHING ----------
+    # ---------- EXTRA COMMON VARIATIONS ----------
 
-    for token in doc:
+    variations = {
 
-        token_text = token.text.strip()
+        "ml": "Machine Learning",
 
-        for skill in SKILLS:
+        "ai": "Artificial Intelligence",
 
-            if token_text == skill.lower():
+        "js": "JavaScript",
 
-                found_skills.add(
-                    skill.title()
-                )
+        "node": "Nodejs",
+
+        "reactjs": "React",
+
+        "tf": "Tensorflow"
+
+    }
+
+    words = text_lower.split()
+
+    for word in words:
+
+        if word in variations:
+
+            found_skills.add(
+                variations[word]
+            )
 
     return sorted(
         list(found_skills)
