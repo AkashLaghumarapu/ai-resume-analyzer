@@ -3,7 +3,6 @@ import pandas as pd
 import os
 from datetime import datetime
 
-from modules.auth import load_authenticator
 from modules.resume_parser import extract_text_from_pdf
 from modules.skill_extractor import extract_skills
 from modules.matcher import (
@@ -22,51 +21,6 @@ st.set_page_config(
     page_title="AI Resume Analyzer",
     page_icon="📄",
     layout="wide"
-)
-
-
-# ---------------- AUTHENTICATION ----------------
-
-authenticator = load_authenticator()
-
-authenticator.login()
-
-authentication_status = st.session_state.get(
-    "authentication_status"
-)
-
-name = st.session_state.get("name")
-
-username = st.session_state.get("username")
-
-
-# ---------------- LOGIN STATES ----------------
-
-if authentication_status is False:
-
-    st.error(
-        "Username/password is incorrect"
-    )
-
-    st.stop()
-
-elif authentication_status is None:
-
-    st.warning(
-        "Please enter your username and password"
-    )
-
-    st.stop()
-
-
-# ---------------- SUCCESS LOGIN ----------------
-
-st.sidebar.success(
-    f"Welcome {name}"
-)
-
-authenticator.logout(
-    location="sidebar"
 )
 
 
@@ -121,13 +75,9 @@ with col2:
     st.subheader("Features")
 
     st.write("✅ Resume ATS Score")
-
     st.write("✅ Skill Extraction")
-
     st.write("✅ Missing Skill Detection")
-
     st.write("✅ Resume Recommendations")
-
     st.write("✅ PDF Report Download")
 
 
@@ -137,7 +87,7 @@ if resume_file is not None and job_description.strip():
 
     with st.spinner("Analyzing Resume..."):
 
-        # ---------- EXTRACT RESUME TEXT ----------
+        # ---------- EXTRACT TEXT ----------
 
         resume_text = extract_text_from_pdf(
             resume_file
@@ -179,8 +129,6 @@ if resume_file is not None and job_description.strip():
 
         section_score = 0
 
-        # ---------- SECTION CHECK ----------
-
         if resume_sections.get("skills"):
             section_score += 10
 
@@ -193,13 +141,9 @@ if resume_file is not None and job_description.strip():
         if resume_sections.get("experience"):
             section_score += 10
 
-        # ---------- MAIN SCORE ----------
-
         keyword_score = similarity_score * 30
 
         skill_score = skill_match_score * 30
-
-        # ---------- BASE SCORE ----------
 
         ats_score = int(
 
@@ -220,8 +164,6 @@ if resume_file is not None and job_description.strip():
 
         if skill_match_score >= 0.60:
             ats_score += 10
-
-        # ---------- EXTRA BONUS ----------
 
         if len(resume_skills) >= 8:
             ats_score += 5
@@ -315,7 +257,7 @@ if resume_file is not None and job_description.strip():
                 f"{int(skill_match_score * 100)}%"
             )
 
-        # ---------- GRADE DISPLAY ----------
+        # ---------- GRADE ----------
 
         st.success(
             f"Resume Grade: {grade}"
@@ -347,7 +289,7 @@ if resume_file is not None and job_description.strip():
                 "Resume Needs Improvement"
             )
 
-        # ---------- PROGRESS BARS ----------
+        # ---------- PROGRESS ----------
 
         st.subheader("ATS Insights")
 
@@ -407,7 +349,7 @@ if resume_file is not None and job_description.strip():
 
         )
 
-        # ---------- MATCHED SKILLS ----------
+        # ---------- MATCHED ----------
 
         st.subheader("Matched Skills")
 
@@ -423,7 +365,7 @@ if resume_file is not None and job_description.strip():
                 "No matching skills found."
             )
 
-        # ---------- MISSING SKILLS ----------
+        # ---------- MISSING ----------
 
         st.subheader("Missing Skills")
 
@@ -439,7 +381,7 @@ if resume_file is not None and job_description.strip():
                 "No major skills missing."
             )
 
-        # ---------- RESUME SECTIONS ----------
+        # ---------- SECTIONS ----------
 
         with st.expander(
             "Resume Section Analysis"
@@ -481,7 +423,7 @@ if resume_file is not None and job_description.strip():
 
         report_bytes = generate_pdf_report(
 
-            candidate_name=username or "Candidate",
+            candidate_name="Candidate",
 
             resume_name=resume_file.name,
 
@@ -537,7 +479,7 @@ if resume_file is not None and job_description.strip():
                     timespec="seconds"
                 ),
 
-                "user": username,
+                "user": "guest",
 
                 "resume_name": resume_file.name,
 
@@ -551,14 +493,6 @@ if resume_file is not None and job_description.strip():
                 "skill_match_score": round(
                     skill_match_score,
                     3
-                ),
-
-                "matched_skills": ";".join(
-                    sorted(matched_skills)
-                ),
-
-                "missing_skills": ";".join(
-                    sorted(missing_skills)
                 )
 
             }
@@ -590,33 +524,6 @@ if resume_file is not None and job_description.strip():
                 history_path,
                 index=False
             )
-
-        # ---------- HISTORY ----------
-
-        if os.path.exists(
-            os.path.join(
-                "data",
-                "history.csv"
-            )
-        ):
-
-            st.write("---")
-
-            st.subheader(
-                "Recent Analysis History"
-            )
-
-            history_data = pd.read_csv(
-                os.path.join(
-                    "data",
-                    "history.csv"
-                )
-            )
-
-            st.dataframe(
-                history_data.tail(10)
-            )
-
 
 elif resume_file is not None and not job_description.strip():
 
