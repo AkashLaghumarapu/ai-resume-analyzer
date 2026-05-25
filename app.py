@@ -93,10 +93,10 @@ if resume_file is not None and job_description.strip():
             resume_file
         )
 
-        if not resume_text.strip():
+        if not resume_text or len(resume_text.strip()) < 50:
 
             st.error(
-                "No readable text found in resume."
+                "Resume text could not be extracted properly."
             )
 
             st.stop()
@@ -141,35 +141,32 @@ if resume_file is not None and job_description.strip():
         if resume_sections.get("experience"):
             section_score += 10
 
-        keyword_score = similarity_score * 30
+        # ---------- SKILL MATCH PERCENT ----------
 
-        skill_score = skill_match_score * 30
+        skill_percentage = 0
+
+        if len(jd_skills) > 0:
+
+            skill_percentage = (
+                len(matched_skills)
+                / len(jd_skills)
+            )
+
+        # ---------- FINAL ATS ----------
 
         ats_score = int(
 
-            40
+            (
+                similarity_score * 40
+            )
+            +
+            (
+                skill_percentage * 50
+            )
             +
             section_score
-            +
-            keyword_score
-            +
-            skill_score
 
         )
-
-        # ---------- BONUS ----------
-
-        if similarity_score >= 0.60:
-            ats_score += 10
-
-        if skill_match_score >= 0.60:
-            ats_score += 10
-
-        if len(resume_skills) >= 8:
-            ats_score += 5
-
-        if len(matched_skills) >= 5:
-            ats_score += 5
 
         # ---------- PENALTY ----------
 
@@ -230,27 +227,31 @@ if resume_file is not None and job_description.strip():
             resume_text
         )
 
-        # ---------- METRICS ----------
+        # ---------- RESULTS ----------
+
+        st.success(
+            "Resume analysis completed successfully!"
+        )
 
         st.subheader("Resume Analysis")
 
-        col1, col2, col3 = st.columns(3)
+        c1, c2, c3 = st.columns(3)
 
-        with col1:
+        with c1:
 
             st.metric(
                 "ATS Score",
                 f"{ats_score}/100"
             )
 
-        with col2:
+        with c2:
 
             st.metric(
                 "Similarity Score",
                 f"{int(similarity_score * 100)}%"
             )
 
-        with col3:
+        with c3:
 
             st.metric(
                 "Skill Match",
@@ -263,7 +264,7 @@ if resume_file is not None and job_description.strip():
             f"Resume Grade: {grade}"
         )
 
-        # ---------- RESUME STRENGTH ----------
+        # ---------- STRENGTH ----------
 
         if ats_score >= 85:
 
@@ -330,23 +331,17 @@ if resume_file is not None and job_description.strip():
         st.subheader("Skills Analysis")
 
         st.write(
-
             "**Resume Skills:**",
-
             ", ".join(sorted(resume_skills))
             if resume_skills
             else "No skills detected"
-
         )
 
         st.write(
-
             "**Job Description Skills:**",
-
             ", ".join(sorted(jd_skills))
             if jd_skills
             else "No skills detected"
-
         )
 
         # ---------- MATCHED ----------
@@ -379,34 +374,6 @@ if resume_file is not None and job_description.strip():
 
             st.success(
                 "No major skills missing."
-            )
-
-        # ---------- SECTIONS ----------
-
-        with st.expander(
-            "Resume Section Analysis"
-        ):
-
-            for section, content in resume_sections.items():
-
-                st.markdown(
-                    f"### {section.title()}"
-                )
-
-                st.write(
-                    content
-                    if content
-                    else "Not detected"
-                )
-
-        # ---------- KEYWORDS ----------
-
-        with st.expander(
-            "Top Resume Keywords"
-        ):
-
-            st.table(
-                keyword_df.head(10)
             )
 
         # ---------- RECOMMENDATIONS ----------
@@ -485,15 +452,9 @@ if resume_file is not None and job_description.strip():
 
                 "ats_score": ats_score,
 
-                "similarity_score": round(
-                    similarity_score,
-                    3
-                ),
+                "similarity_score": similarity_score,
 
-                "skill_match_score": round(
-                    skill_match_score,
-                    3
-                )
+                "skill_match_score": skill_match_score
 
             }
 
@@ -525,8 +486,43 @@ if resume_file is not None and job_description.strip():
                 index=False
             )
 
+        # ---------- HISTORY ----------
+
+        if os.path.exists(
+            os.path.join(
+                "data",
+                "history.csv"
+            )
+        ):
+
+            st.write("---")
+
+            st.subheader(
+                "Recent Analysis History"
+            )
+
+            history_data = pd.read_csv(
+                os.path.join(
+                    "data",
+                    "history.csv"
+                )
+            )
+
+            st.dataframe(
+                history_data.tail(10)
+            )
+
 elif resume_file is not None and not job_description.strip():
 
     st.warning(
         "Please paste the job description."
     )
+
+
+# ---------- FOOTER ----------
+
+st.write("---")
+
+st.caption(
+    "Built with Python, NLP, Streamlit, and Machine Learning"
+)

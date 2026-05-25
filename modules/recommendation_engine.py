@@ -1,48 +1,87 @@
-def generate_recommendations(ats_score, missing_skills, resume_sections, matched_skills, resume_skills, jd_skills):
+def generate_recommendations(
+
+    ats_score,
+    missing_skills,
+    resume_sections,
+    matched_skills,
+    resume_skills,
+    jd_skills
+
+):
+
     recommendations = []
 
+    # ---------- SCORE ----------
+
+    if ats_score < 50:
+
+        recommendations.append(
+            "Resume is poorly aligned with the job description."
+        )
+
+    elif ats_score < 70:
+
+        recommendations.append(
+            "Resume partially matches the job description."
+        )
+
+    else:
+
+        recommendations.append(
+            "Resume is well aligned with the job description."
+        )
+
+    # ---------- MISSING SKILLS ----------
+
     if missing_skills:
+
         recommendations.append(
-            f"Add the missing skills from the job description: {', '.join(missing_skills)}."
+
+            "Add missing skills: "
+            +
+            ", ".join(missing_skills[:5])
+
         )
 
-    if not resume_sections.get("Projects"):
+    # ---------- SECTIONS ----------
+
+    required_sections = [
+
+        "skills",
+        "projects",
+        "education",
+        "experience"
+
+    ]
+
+    for section in required_sections:
+
+        if not resume_sections.get(section):
+
+            recommendations.append(
+
+                f"Add {section} section to improve ATS score."
+
+            )
+
+    # ---------- MATCH QUALITY ----------
+
+    if len(matched_skills) >= 5:
+
         recommendations.append(
-            "Add a dedicated Projects section with measurable results to strengthen your profile."
+            "Strong skill match with job description."
         )
 
-    if not resume_sections.get("Skills") and resume_skills:
+    elif len(matched_skills) >= 2:
+
         recommendations.append(
-            "Create a clear Skills section to improve ATS parseability and recruiter scanning."
+            "Moderate skill match detected."
         )
 
-    if ats_score < 80:
-        recommendations.append(
-            "Use quantifiable achievements and action verbs to improve your ATS score and recruiter impact."
-        )
+    else:
 
-    if 80 <= ats_score < 90:
         recommendations.append(
-            "Your resume is strong; focus on tailoring experience and keywords for the target job."
-        )
-    elif ats_score >= 90:
-        recommendations.append(
-            "Excellent fit — keep refining the resume for clarity and recruiter-friendly formatting."
-        )
-
-    if not resume_skills:
-        recommendations.append(
-            "List your technical and soft skills clearly so the ATS and hiring managers can detect them."
-        )
-
-    if not matched_skills and jd_skills:
-        recommendations.append(
-            "Try matching your resume language to the job description and include relevant terminology."
-        )
-
-    if not recommendations:
-        recommendations.append(
-            "Resume analysis looks healthy. Keep tailoring your resume for each role and continue building new achievements."
+            "Very few relevant skills detected."
         )
 
     return recommendations

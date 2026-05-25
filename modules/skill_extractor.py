@@ -1,3 +1,6 @@
+import re
+
+
 # ---------- SKILLS DATABASE ----------
 
 SKILLS = [
@@ -36,16 +39,55 @@ SKILLS = [
     "api",
     "rest api",
     "opencv",
-    "computer vision"
+    "computer vision",
+
+    # ---------- EXTRA SKILLS ----------
+
+    "spring boot",
+    "fastapi",
+    "keras",
+    "excel",
+    "typescript",
+    "bootstrap",
+    "tailwind",
+    "redis",
+    "firebase",
+    "azure",
+    "kubernetes",
+    "jira",
+    "agile",
+    "selenium",
+    "cybersecurity",
+    "penetration testing",
+    "network security"
 
 ]
+
+
+# ---------- EXTRA COMMON VARIATIONS ----------
+
+VARIATIONS = {
+
+    "ml": "Machine Learning",
+
+    "ai": "Artificial Intelligence",
+
+    "js": "JavaScript",
+
+    "reactjs": "React",
+
+    "node": "Nodejs",
+
+    "tf": "Tensorflow"
+
+}
 
 
 # ---------- EXTRACT SKILLS ----------
 
 def extract_skills(text):
 
-    if text is None:
+    if not text:
 
         return []
 
@@ -57,38 +99,28 @@ def extract_skills(text):
 
     for skill in SKILLS:
 
-        if skill.lower() in text_lower:
+        pattern = r"\b" + re.escape(skill.lower()) + r"\b"
+
+        if re.search(pattern, text_lower):
 
             found_skills.add(
                 skill.title()
             )
 
-    # ---------- EXTRA COMMON VARIATIONS ----------
-
-    variations = {
-
-        "ml": "Machine Learning",
-
-        "ai": "Artificial Intelligence",
-
-        "js": "JavaScript",
-
-        "node": "Nodejs",
-
-        "reactjs": "React",
-
-        "tf": "Tensorflow"
-
-    }
+    # ---------- VARIATION MATCH ----------
 
     words = text_lower.split()
 
     for word in words:
 
-        if word in variations:
+        clean_word = word.strip(
+            ".,!?():;/"
+        )
+
+        if clean_word in VARIATIONS:
 
             found_skills.add(
-                variations[word]
+                VARIATIONS[clean_word]
             )
 
     return sorted(

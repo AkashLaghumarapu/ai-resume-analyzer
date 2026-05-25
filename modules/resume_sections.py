@@ -1,37 +1,87 @@
 import re
 
-SECTION_HEADERS = [
-    "Professional Summary",
-    "Summary",
-    "Experience",
-    "Work Experience",
-    "Education",
-    "Skills",
-    "Technical Skills",
-    "Projects",
-    "Certifications",
-    "Awards",
-    "Achievements",
-    "Qualifications",
-]
 
+# ---------- SECTION HEADERS ----------
+
+SECTION_PATTERNS = {
+
+    "education": [
+
+        "education",
+        "academic background",
+        "qualification"
+
+    ],
+
+    "skills": [
+
+        "skills",
+        "technical skills",
+        "core skills"
+
+    ],
+
+    "projects": [
+
+        "projects",
+        "personal projects",
+        "academic projects"
+
+    ],
+
+    "experience": [
+
+        "experience",
+        "work experience",
+        "professional experience"
+
+    ]
+
+}
+
+
+# ---------- EXTRACT SECTIONS ----------
 
 def extract_resume_sections(text):
-    sections = {header: "" for header in SECTION_HEADERS}
-    sections["Summary"] = ""
-    current_section = "Summary"
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
 
-    for line in lines:
-        header_match = next((header for header in SECTION_HEADERS if header.lower() in line.lower()), None)
-        if header_match:
-            current_section = header_match
-            sections[current_section] = ""
-            continue
+    if not text:
 
-        sections[current_section] += f" {line}"
+        return {}
 
-    trimmed_sections = {section: content.strip() for section, content in sections.items() if content.strip()}
-    if not trimmed_sections:
-        trimmed_sections["Summary"] = text.strip()
-    return trimmed_sections
+    text_lower = text.lower()
+
+    sections = {}
+
+    for section, patterns in SECTION_PATTERNS.items():
+
+        found = False
+
+        for pattern in patterns:
+
+            regex = rf"{pattern}(.*?)(?=\n[A-Z ]{{3,}}|\Z)"
+
+            match = re.search(
+
+                regex,
+                text_lower,
+                re.DOTALL
+
+            )
+
+            if match:
+
+                content = match.group(1).strip()
+
+                if len(content) > 20:
+
+                    sections[section] = content
+
+                    found = True
+
+                    break
+
+        if not found:
+
+            sections[section] = ""
+
+    return sections
